@@ -6,11 +6,14 @@
  * Fourth Task – calculates the average value. All this tasks should print the values to console.
  */
 using System;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace MultiThreading.Task2.Chaining
 {
     class Program
     {
+        private static Random random = new Random();
         static void Main(string[] args)
         {
             Console.WriteLine(".Net Mentoring Program. MultiThreading V1 ");
@@ -21,9 +24,58 @@ namespace MultiThreading.Task2.Chaining
             Console.WriteLine("Fourth Task – calculates the average value. All this tasks should print the values to console");
             Console.WriteLine();
 
-            // feel free to add your code
+            var random = new Random();
+
+            Task.Run(Task1)
+                    .ContinueWith(task => Task2(task.Result))
+                    .ContinueWith(task => Task3(task.Result))
+                    .ContinueWith(task => Task4(task.Result));
 
             Console.ReadLine();
+        }
+
+        private static void Task4(int[] array)
+        {
+            var mean = array.Average();
+            Console.WriteLine($"{mean} - sorted array");
+        }
+
+        private static int[] Task3(int[] array)
+        {
+            Array.Sort(array);
+            for (var i = 0; i < array.Length; i++)
+            {
+                Console.Write(array[i] + " ");
+            }
+            Console.WriteLine(" - sorted array");
+            return array;
+        }
+
+        private static int[] Task2(int[] array)
+        {
+            var randomNumber = random.Next(0, 10);
+
+            for (var i = 0; i < array.Length; i++)
+            {
+                array[i] *= randomNumber;
+                Console.Write(array[i] + " ");
+            }
+            Console.WriteLine($" - my array * {randomNumber}");
+            return array;
+        }
+
+
+        private static int[] Task1()
+        {
+            var array = new int[10];
+
+            for (var i = 0; i < array.Length; i++)
+            {
+                array[i] = random.Next(0, 10);
+                Console.Write(array[i] + " ");
+            }
+            Console.WriteLine(" - my array");
+            return array;
         }
     }
 }
