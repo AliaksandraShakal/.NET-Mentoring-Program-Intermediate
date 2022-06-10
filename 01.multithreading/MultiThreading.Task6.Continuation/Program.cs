@@ -7,6 +7,8 @@
    Demonstrate the work of the each case with console utility.
 */
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace MultiThreading.Task6.Continuation
 {
@@ -22,8 +24,46 @@ namespace MultiThreading.Task6.Continuation
             Console.WriteLine("Demonstrate the work of the each case with console utility.");
             Console.WriteLine();
 
-            // feel free to add your code
+            var cancellationTokenSource = new CancellationTokenSource();
 
+            var task = Task.Run(() => { Console.WriteLine($"Thread id: {Environment.CurrentManagedThreadId}"); })
+
+                .ContinueWith(
+                    taskA =>
+                    {
+                        Console.WriteLine($"a. Thread id: {Environment.CurrentManagedThreadId}");
+                        throw new Exception();
+                    })
+
+                .ContinueWith(
+                    taskB =>
+                    {
+                        Console.WriteLine($"b. Thread id: {Environment.CurrentManagedThreadId}");
+                        throw new Exception();
+                    },
+                    TaskContinuationOptions.OnlyOnFaulted)
+
+                .ContinueWith(
+                    taskC =>
+                    {
+                        Console.WriteLine($"c. Thread id: {Environment.CurrentManagedThreadId}");
+
+
+                        cancellationTokenSource.Cancel();
+                        cancellationTokenSource.Token.ThrowIfCancellationRequested();
+                    },
+                   cancellationTokenSource.Token,
+                    TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously,
+                    TaskScheduler.Current)
+
+                .ContinueWith(
+                    taskD =>
+                    {
+                        Console.WriteLine($"d. Thread id: {Environment.CurrentManagedThreadId}");
+                    }, new CancellationToken(),
+                    TaskContinuationOptions.OnlyOnCanceled | TaskContinuationOptions.LongRunning, TaskScheduler.Default);
+
+            task.Wait();
             Console.ReadLine();
         }
     }
