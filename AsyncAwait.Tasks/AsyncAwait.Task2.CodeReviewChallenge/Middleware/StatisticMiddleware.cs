@@ -23,8 +23,8 @@ public class StatisticMiddleware
     {
         string path = context.Request.Path;
 
-        var a =  _statisticService.RegisterVisitAsync(path);
-        var b =  UpdateHeaders();
+        await _statisticService.RegisterVisitAsync(path);
+        await UpdateHeaders();
 
         async Task UpdateHeaders()
         {
@@ -33,8 +33,6 @@ public class StatisticMiddleware
                 CustomHttpHeaders.TotalPageVisits,
                count.ToString());
         }
-        await a;
-        await b;
         await _next(context);
     }
 }
